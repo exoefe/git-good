@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Git Collage Workshop</title>
+  <style>
+    :root { --gap:.8rem; --maxw:1200px; }
+    *{ box-sizing:border-box }
+    body{ font-family:system-ui, sans-serif; margin:0; background:#0b0c10; color:#e8edf2; }
+    header{ max-width:var(--maxw); margin:2rem auto 1rem; padding:0 1rem; }
+    h1{ margin:0 0 .25rem }
+    #count{ opacity:.8; margin:0 }
+    .grid{ max-width:var(--maxw); margin:0 auto 4rem; padding:0 1rem;
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:var(--gap); }
+    .card{ margin:0; background:#11151a; border:1px solid #1d232b; border-radius:14px; overflow:hidden; display:flex; flex-direction:column; }
+    .card img{ width:100%; height:180px; object-fit:cover; display:block; }
+    figcaption{ padding:.6rem .8rem }
+    .caption{ font-weight:600; margin-bottom:.25rem }
+    .meta{ font-size:.85rem; opacity:.75 }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎨 Git Collage Workshop</h1>
+    <p id="count">Contributors: 1 · Images: 1</p>
+  </header>
+  <main class="grid">
+    
+<figure class="card">
+  <img src="images/alex/hamburger_image.jpg" alt="alex&#x27;s image" loading="lazy" />
+  <figcaption>
+    <div class="caption">alex</div>
+    <div class="meta">hamburger_image.jpg</div>
+  </figcaption>
+</figure>
+  </main>
+</body>
+</html>
+
