@@ -1,4 +1,4 @@
-# 🎨 Git Collage Workshop (Beginner Friendly)
+# 🎨 Git Collage Workshop 
 
 Add **one image** that matches the theme:
 
