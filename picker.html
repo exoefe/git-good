@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>🎰 Collage Roulette</title>
+<style>
+  :root { --maxw: 1000px }
+  * { box-sizing: border-box }
+  body { margin: 0; font-family: system-ui, sans-serif; background: #0b0c10; color: #e8edf2; }
+  header, main { max-width: var(--maxw); margin: 1.2rem auto; padding: 0 1rem; }
+  h1 { margin: .25rem 0 0 }
+  p { margin: .4rem 0 .8rem; opacity:.9 }
+  .wrap { display:grid; grid-template-columns: 1fr 320px; gap: 1rem; align-items:start }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr } }
+  .strip { position: relative; border:1px solid #1d232b; background:#11151a; height: 800px; overflow: hidden; border-radius: 14px; }
+  .reel { position: absolute; top:0; left:0; right:0; will-change: transform; }
+  .card { display:flex; align-items:center; gap:.8rem; padding:.6rem .8rem; border-bottom:1px solid #1a2028 }
+  .card img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; }
+  .name { font-weight: 600 }
+  .controls { border:1px solid #1d232b; background:#11151a; border-radius: 14px; padding: .8rem }
+  button { width: 100%; padding: .8rem 1rem; border:0; border-radius: 12px; background:#2b6cb0; color:white; font-weight:700; cursor:pointer }
+  button:disabled { opacity:.6; cursor:not-allowed }
+  .row { display:flex; gap:.5rem; align-items:center; margin:.6rem 0 }
+  input[type=text] { flex:1; padding:.6rem .7rem; border-radius:10px; border:1px solid #1f2630; background:#0f1318; color:#e8edf2 }
+  .result { margin-top:.6rem; padding:.6rem .7rem; background:#0f1318; border:1px solid #1f2630; border-radius:10px; min-height:3rem }
+  .tiny { font-size:.85rem; opacity:.8; margin-top:.4rem; word-break:break-all }
+  .pointer { position:absolute; top:0; left:0; right:0; height:0; border-top: 3px solid #2b6cb0 }
+  /* Confetti canvas overlays everything but ignores pointer events */
+  #confetti { position: fixed; inset: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎰 Collage Roulette</h1>
+  <p>Press <strong>Spin</strong> to randomly select a winner from today’s contributors.</p>
+</header>
+
+<main class="wrap">
+  <section class="strip">
+    <div class="pointer"></div>
+    <div id="reel" class="reel"></div>
+  </section>
+
+  <aside class="controls">
+    <div class="row">
+      <button id="spin">Spin</button>
+    </div>
+    <div class="row">
+      <input id="seed" type="text" placeholder="Optional seed (e.g. today's date or a phrase)" />
+    </div>
+    <div class="result" id="result">No winner yet.</div>
+    <div class="tiny" id="audit"></div>
+  </aside>
+</main>
+
+<!-- Confetti canvas -->
+<canvas id="confetti"></canvas>
+
+<script>
+  // Filled by generate.py:
+  const ENTRIES = [
+{
+"user": "AndreaW03",
+"src": "images/AndreaW03/bilde123.jpg",
+"file": "bilde123.jpg"
+},
+{
+"user": "EarlGreyTT",
+"src": "images/EarlGreyTT/despair.jpg",
+"file": "despair.jpg"
+},
+{
+"user": "Ebbisso",
+"src": "images/Ebbisso/Lars monsen.jpeg",
+"file": "Lars monsen.jpeg"
+},
+{
+"user": "Eirik_b",
+"src": "images/Eirik_b/reaction.jpeg",
+"file": "reaction.jpeg"
+},
+{
+"user": "Elmi-Hashi",
+"src": "images/Elmi-Hashi/images.webp",
+"file": "images.webp"
+},
+{
+"user": "EmilBjorkeng",
+"src": "images/EmilBjorkeng/what.png",
+"file": "what.png"
+},
+{
+"user": "Mushroombunny",
+"src": "images/Mushroombunny/scaredcat.jpeg",
+"file": "scaredcat.jpeg"
+},
+{
+"user": "Oscareg1",
+"src": "images/Oscareg1/sideeye.png",
+"file": "sideeye.png"
+},
+{
+"user": "abigail",
+"src": "images/abigail/meme.webp",
+"file": "meme.webp"
+},
+{
+"user": "alex",
+"src": "images/alex/hamburger_image.jpg",
+"file": "hamburger_image.jpg"
+},
+{
+"user": "araz",
+"src": "images/araz/megamind-no-bitches-meme-3264x3264-v0-gb5bw6safuu81.png",
+"file": "megamind-no-bitches-meme-3264x3264-v0-gb5bw6safuu81.png"
+},
+{
+"user": "chris",
+"src": "images/chris/4meme.jpg",
+"file": "4meme.jpg"
+},
+{
+"user": "cklfc",
+"src": "images/cklfc/the-famous-wet-owl-also-known-as-lamont-appears-to-be-a-v0-0awtil7kynr81.jpg",
+"file": "the-famous-wet-owl-also-known-as-lamont-appears-to-be-a-v0-0awtil7kynr81.jpg"
+},
+{
+"user": "daniel",
+"src": "images/daniel/Windsor_Castle_at_Sunset_-_Nov_2006.jpg",
+"file": "Windsor_Castle_at_Sunset_-_Nov_2006.jpg"
+},
+{
+"user": "efe",
+"src": "images/efe/cute_reaction_image.jpg",
+"file": "cute_reaction_image.jpg"
+},
+{
+"user": "eirik",
+"src": "images/eirik/8017051C-B003-41C5-96E3-1C42C560A65B.webp",
+"file": "8017051C-B003-41C5-96E3-1C42C560A65B.webp"
+},
+{
+"user": "ewi",
+"src": "images/ewi/meme.jpg",
+"file": "meme.jpg"
+},
+{
+"user": "frode",
+"src": "images/frode/COLE_PALMER.jpg",
+"file": "COLE_PALMER.jpg"
+},
+{
+"user": "gunnar",
+"src": "images/gunnar/balloon_boy_jd_vance.png",
+"file": "balloon_boy_jd_vance.png"
+},
+{
+"user": "julian",
+"src": "images/julian/tumblr_959c8984aa35faa869024abd5aaa34d6_326c97eb_640.jpg",
+"file": "tumblr_959c8984aa35faa869024abd5aaa34d6_326c97eb_640.jpg"
+},
+{
+"user": "keons",
+"src": "images/keons/depressed_martin.jpg",
+"file": "depressed_martin.jpg"
+},
+{
+"user": "kjeegil",
+"src": "images/kjeegil/2565074.png",
+"file": "2565074.png"
+},
+{
+"user": "martin",
+"src": "images/martin/reaction.png",
+"file": "reaction.png"
+},
+{
+"user": "olve",
+"src": "images/olve/JimmyButlerReaction.jpeg",
+"file": "JimmyButlerReaction.jpeg"
+},
+{
+"user": "sebbe",
+"src": "images/sebbe/malwarebomb.png",
+"file": "malwarebomb.png"
+},
+{
+"user": "stine-k",
+"src": "images/stine-k/man.jpg",
+"file": "man.jpg"
+},
+{
+"user": "thomas",
+"src": "images/thomas/images.jpg",
+"file": "images.jpg"
+},
+{
+"user": "tomat",
+"src": "images/tomat/tomat.jpg",
+"file": "tomat.jpg"
+},
+{
+"user": "troll",
+"src": "images/troll/troll.png",
+"file": "troll.png"
+}
+];
+
+  // Build the reel (looped list so we can scroll freely)
+  const reel = document.getElementById('reel');
+  const CARD_H = 80; // px, rough card height
+  function cardHTML(e) {
+    const esc = s => s.replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;', "'":'&#39;' }[m]));
+    return `<div class="card"><img src="${esc(e.src)}" alt="${esc(e.user)}"><div><div class="name">${esc(e.user)}</div><div class="tiny">${esc(e.file)}</div></div></div>`;
+  }
+  const LOOP = 8;
+  let longList = [];
+  for (let i = 0; i < LOOP; i++) longList = longList.concat(ENTRIES);
+  reel.innerHTML = longList.map(cardHTML).join('');
+
+  // Fair-ish randomness
+  function seededRand(seed) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    let x = (h || 0x9e3779b9) >>> 0;
+    return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x >>>= 0; x ^= x << 5; x >>>= 0; return (x >>> 0) / 2**32; };
+  }
+  function secureRand() {
+    const u32 = new Uint32Array(1);
+    crypto.getRandomValues(u32);
+    return u32[0] / 2**32;
+  }
+
+  const spinBtn = document.getElementById('spin');
+  const seedEl = document.getElementById('seed');
+  const resultEl = document.getElementById('result');
+  const auditEl = document.getElementById('audit');
+
+  // --- Tiny vanilla confetti (canvas-based) ---
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  let confettiParticles = [];
+  let confettiAnimating = false;
+
+  function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function launchConfetti({ bursts = 180, spread = Math.PI, power = 12, decay = 0.985, gravity = 0.25, life = 3000 } = {}) {
+    // create bursts of rectangles from near the top center
+    const cx = window.innerWidth / 2;
+    const cy = 60; // near header
+    const palette = ['#e91e63','#ff9800','#ffc107','#4caf50','#03a9f4','#ab47bc'];
+    for (let i = 0; i < bursts; i++) {
+      const angle = (Math.random() - 0.5) * spread - Math.PI/2; // mostly downward
+      const speed = Math.random() * power + power * 0.5;
+      confettiParticles.push({
+        x: cx + (Math.random() - 0.5) * 40,
+        y: cy + (Math.random() - 0.5) * 20,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        w: Math.random() * 6 + 3,
+        h: Math.random() * 10 + 6,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        color: palette[Math.random() * palette.length | 0],
+        alpha: 1,
+        decay,
+        gravity
+      });
+    }
+
+    if (!confettiAnimating) {
+      confettiAnimating = true;
+      const start = performance.now();
+      (function frame(now){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of confettiParticles) {
+          p.vx *= p.decay; p.vy = p.vy * p.decay + p.gravity;
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          p.alpha *= p.decay;
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+          ctx.restore();
+        }
+        // remove off-screen / invisible
+        confettiParticles = confettiParticles.filter(p => p.alpha > 0.02 && p.y < window.innerHeight + 50);
+        if (confettiParticles.length && (now - start) < life) {
+          requestAnimationFrame(frame);
+        } else {
+          confettiParticles.length = 0;
+          confettiAnimating = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      })(start);
+    }
+  }
+  // --- End confetti ---
+
+  let spinning = false;
+  spinBtn.addEventListener('click', () => {
+    if (spinning || !ENTRIES.length) return;
+    spinning = true; spinBtn.disabled = true; resultEl.textContent = 'Spinning…';
+
+    const seed = seedEl.value.trim();
+    const rnd = seed ? seededRand(seed)() : secureRand();
+    const ts = new Date().toISOString();
+
+    const idx = Math.floor(rnd * ENTRIES.length);
+    const loops = 3 + Math.floor(secureRand() * 2); // 3–4 loops
+    const targetOffset = (loops * ENTRIES.length + idx) * CARD_H;
+
+    const DURATION = 2800 + Math.floor(secureRand()*600); // 2.8–3.4s
+    const start = performance.now();
+    const anim = (now) => {
+      const t = Math.min(1, (now - start) / DURATION);
+      const ease = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      const y = -ease * targetOffset;
+      reel.style.transform = `translateY(${y}px)`;
+      if (t < 1) requestAnimationFrame(anim);
+      else {
+        spinning = false; spinBtn.disabled = false;
+        const winner = ENTRIES[idx];
+        resultEl.innerHTML = `<strong>Winner:</strong> ${winner.user}<br><span class="tiny">${winner.file}</span>`;
+        const nonce = Math.floor(secureRand()*2**32).toString(16).padStart(8,'0');
+        auditEl.textContent = `seed="${seed || 'crypto'}" · idx=${idx}/${ENTRIES.length} · time=${ts} · nonce=${nonce}`;
+
+        // 🎉 Launch confetti when we have a winner
+        launchConfetti();
+      }
+    };
+    requestAnimationFrame(anim);
+  });
+</script>
+</body>
+</html>
+

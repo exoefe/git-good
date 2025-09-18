@@ -2,7 +2,7 @@
 
 Add **one image** that matches the theme:
 
-> **Theme:** Favorite "ask the attendees"
+> **Theme:** Favorite reaction image
 
 ## How to contribute
 1. Clone this repo
